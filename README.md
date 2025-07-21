@@ -19,7 +19,9 @@ y-axis.
 
 - slide x-axis to the next to bath.
 - lift build platform
-- 
 - move back. 
+
+CONTROL LCD DISPLAY:
+- display images from zip file one by one and wait. 
 
 *For any potential overlap between the models, I assume that the the first CAD model will take precedence. (we can print a ven diagram like test)
