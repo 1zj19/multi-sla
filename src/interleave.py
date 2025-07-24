@@ -1,35 +1,45 @@
 import zipfile
 import os
+from io import BytesIO
 
-def process_zip_file():
+def get_image_files(zf):
+    """Returns a sorted list of valid image file names in the ZIP."""
+    return sorted(
+        [f for f in zf.namelist() if f.endswith(".png") and not f.startswith("__MACOSX")],
+        key=lambda x: x.lower()
+    )
 
-    zip_file_path = input("Enter the full path to the zip file: ")
-    if not os.path.exists(zip_file_path):
-        print(f"Error: The file '{zip_file_path}' does not exist.")
-        return
-    if not os.path.isfile(zip_file_path):
-        print(f"Error: The path '{zip_file_path}' is not a file.")
-        return
+def interleave_and_save(zip1_path, zip2_path, output_path):
+    """Interleaves image files from two ZIPs and writes to a new ZIP file."""
+    with zipfile.ZipFile(zip1_path, 'r') as zip1, zipfile.ZipFile(zip2_path, 'r') as zip2:
+        files1 = get_image_files(zip1)
+        files2 = get_image_files(zip2)
 
-    try:
-        with zipfile.ZipFile(zip_file_path, 'r') as zf:
-            print(f"\nReal .png files in '{zip_file_path}':")
-            real_pngs = [
-                name for name in zf.namelist()
-                if name.endswith('.png') and '/._' not in name and not name.startswith('__MACOSX')
-            ]
+        # Interleave files
+        interleaved = []
+        for a, b in zip(files1, files2):
+            interleaved.append(('a', a))
+            interleaved.append(('b', b))
+        # Add extras if one zip has more files
+        for leftover in files1[len(files2):]:
+            interleaved.append(('a', leftover))
+        for leftover in files2[len(files1):]:
+            interleaved.append(('b', leftover))
 
-            if not real_pngs:
-                print("No valid .png files found.")
-                return
+        # Create the output ZIP file
+        with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as out_zip:
+            for origin, filename in interleaved:
+                data = zip1.read(filename) if origin == 'a' else zip2.read(filename)
+                # Save in flat format: a_out0000.png, b_out0000.png, etc.
+                short_name = os.path.basename(filename)
+                new_name = f"{origin}_{short_name}"
+                out_zip.writestr(new_name, data)
 
-            for name in real_pngs:
-                print(name)
+        print(f"✅ Interleaved zip saved to: {output_path}")
 
-    except zipfile.BadZipFile:
-        print(f"Error: '{zip_file_path}' is not a valid zip file.")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-
+# Example usage
 if __name__ == "__main__":
-    process_zip_file()
+    zip1_path = input("Enter path to first zip file: ")
+    zip2_path = input("Enter path to second zip file: ")
+    output_path = input("Enter output zip file name (e.g., interleaved.zip): ")
+    interleave_and_save(zip1_path, zip2_path, output_path)
