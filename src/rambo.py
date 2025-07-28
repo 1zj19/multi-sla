@@ -1,5 +1,4 @@
 import time
-
 import serial
 
 
@@ -10,7 +9,8 @@ def send_message(serial_port, command):
     while True:
         line = serial_port.readline().decode().strip()
         print(line)
-        if not line:
+        # if not line:
+        if "ok" in line.lower():
             break
 
 
