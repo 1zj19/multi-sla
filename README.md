@@ -1,9 +1,11 @@
 # multi-sla
 
-PURE SOFTWARE SIDE:
-Takes in multiple .stl files of CAD models, runs a slicer, generates two zip folders of .pngs. 
-Generates one zip folder (alternating .png images from the zip folders) until one runs out, complete the stack with the rest. 
+Currently generating .png zip of stl slices using Prusa slicer: 
+https://github.com/prusa3d/PrusaSlicer/releases/tag/version_2.7.3-beta1
+interleave.py --> takes in the paths of the zip files and interleaves and outputs a combined file.
+rambo.py --> just sending individual g-code serially
 
+general idea:
 CONTROL STEPPER MOTORS:
 y-axis. 
 - set starting y-axis depth.
